@@ -1,0 +1,41 @@
+version: '3.8'
+
+networks:
+  fastapi_network:
+    driver: bridge
+
+services:
+  # Serviço para a aplicação FastAPI
+  # web:
+  #   build: .
+  #   container_name: fastapi_app
+  #   volumes:
+  #     - ./app:/usr/src/app/app
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on:
+  #     - db
+  #   env_file:
+  #     - .env
+  #   networks:
+  #     - fastapi_network
+  #   stdin_open: true
+  #   tty: true
+
+  # Serviço para o banco de dados PostgreSQL
+  db:
+    image: postgres:latest
+    container_name: task_manager_db
+    environment:
+      POSTGRES_USER: task_manager
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: task_manager_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - task_manager_data:/var/lib/postgresql/data
+    networks:
+      - fastapi_network
+
+volumes:
+  task_manager_data:
