@@ -9,6 +9,8 @@ from api.services.usuario import UsuarioService
 from api.repositories.usuario import UsuarioRepository
 from api.repositories.conta import ContaRepository
 from api.services.conta import ContaService
+from api.services.task import TaskService
+from api.repositories.task import TaskRepository
 
 
 T_Session = Annotated[Session, Depends(get_db)]
@@ -35,3 +37,13 @@ def get_conta_deps(db: T_Session) -> ContaDependencies:
     return ContaDependencies(db)
 
 T_ContaDeps = Annotated[ContaDependencies, Depends(get_conta_deps)]
+
+class TaskDependencies:
+    def __init__(self, db: T_Session):
+        self.task_repository = TaskRepository(db)
+        self.task_service = TaskService(self.task_repository)
+
+def get_task_deps(db: T_Session) -> TaskDependencies:
+    return TaskDependencies(db)
+
+T_TaskDeps = Annotated[TaskDependencies, Depends(get_task_deps)]

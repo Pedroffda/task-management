@@ -20,18 +20,18 @@ Desenvolver um sistema completo de gerenciamento de tarefas que demonstre conhec
 ## 🚀 Funcionalidades Esperadas
 
 ### Autenticação
-- [ ] Registro de usuário
-- [ ] Login com email e senha
-- [ ] Proteção de rotas com JWT
-- [ ] Logout
+- [X] Registro de usuário
+- [X] Login com email e senha
+- [X] Proteção de rotas com JWT
+- [X] Logout
 
 ### Gerenciamento de Tarefas
-- [ ] Listar todas as tarefas do usuário logado
-- [ ] Criar nova tarefa
-- [ ] Visualizar detalhes de uma tarefa
-- [ ] Editar tarefa existente
-- [ ] Excluir tarefa
-- [ ] Marcar tarefa como concluída/pendente
+- [X] Listar todas as tarefas do usuário logado
+- [X] Criar nova tarefa
+- [X] Visualizar detalhes de uma tarefa
+- [X] Editar tarefa existente
+- [X] Excluir tarefa
+- [X] Marcar tarefa como concluída/pendente
 
 ## 📊 Estrutura de Dados (sugerida)
 

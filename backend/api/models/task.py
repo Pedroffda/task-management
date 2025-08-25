@@ -22,8 +22,6 @@ class Tarefa(Base):
     status: Mapped[StatusTarefa] = mapped_column(SQLAlchemyEnum(StatusTarefa, name="status_tarefa"))
     prioridade: Mapped[PrioridadeTarefa] = mapped_column(SQLAlchemyEnum(PrioridadeTarefa, name="prioridade_tarefa"))
     data_vencimento: Mapped[datetime]
-    data_criacao: Mapped[datetime]
-    data_atualizacao: Mapped[datetime]
     usuario_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("usuario.id"))
 
     usuario: Mapped["Usuario"] = relationship("Usuario", back_populates="tarefas")
