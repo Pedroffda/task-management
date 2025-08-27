@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,17 +24,8 @@ function RegisterPageContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const { register: registerUser, user, isLoading: authLoading } = useAuth();
+  const { register: registerUser } = useAuth();
   const { success, error: showError } = useToast();
-
-  // Redirecionar usuários já autenticados
-  useEffect(() => {
-    if (!authLoading && user) {
-      const redirectTo = searchParams.get("redirect") || "/tasks";
-      router.push(decodeURIComponent(redirectTo));
-    }
-  }, [user, authLoading, router, searchParams]);
 
   const {
     register,
@@ -53,9 +44,6 @@ function RegisterPageContent() {
       if (result.success) {
         success("Conta criada com sucesso!");
         router.refresh();
-        // Redirecionar para a rota original ou para tasks
-        const redirectTo = searchParams.get("redirect") || "/tasks";
-        router.push(decodeURIComponent(redirectTo));
       } else {
         showError(
           result.error || "Ocorreu um erro durante o registro. Tente novamente."

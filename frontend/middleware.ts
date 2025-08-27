@@ -22,9 +22,7 @@ export function middleware(request: NextRequest) {
   
   // Se for uma rota protegida, verificar autenticação
   if (isProtectedRoute) {
-    const token = request.cookies.get('access_token')?.value || 
-                  request.headers.get('authorization')?.replace('Bearer ', '')
-    
+    const token = request.cookies.get('access_token')?.value 
     // Se não houver token, redirecionar para login
     if (!token) {
       const loginUrl = new URL('/login', request.url)
@@ -35,12 +33,11 @@ export function middleware(request: NextRequest) {
   
   // Se for uma rota pública e o usuário estiver autenticado, 
   // redirecionar para tasks se tentar acessar login/register
-  if ((pathname === '/login' || pathname === '/register') && 
-      request.cookies.get('access_token')?.value) {
-    return NextResponse.redirect(new URL('/tasks', request.url))
+  if ((pathname === "/login" || pathname === "/register") && request.cookies.get("access_token")?.value) {
+    return NextResponse.redirect(new URL("/tasks", request.url));
   }
-  
-  return NextResponse.next()
+
+  return NextResponse.next();
 }
 
 export const config = {
@@ -52,6 +49,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public folder
      */
-    '/((?!_next/static|_next/image|favicon.ico|public).*)',
+    "/((?!_next/static|_next/image|favicon.ico|public).*)",
   ],
-} 
+};
