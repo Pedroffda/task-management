@@ -52,6 +52,7 @@ function RegisterPageContent() {
       const result = await registerUser(data.name, data.email, data.password);
       if (result.success) {
         success("Conta criada com sucesso!");
+        router.refresh();
         // Redirecionar para a rota original ou para tasks
         const redirectTo = searchParams.get("redirect") || "/tasks";
         router.push(decodeURIComponent(redirectTo));

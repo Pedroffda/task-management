@@ -52,6 +52,7 @@ function LoginPageContent() {
       const result = await login(data.email, data.password);
       if (result.success) {
         success("Login realizado com sucesso!");
+        router.refresh();
         // Redirecionar para a rota original ou para tasks
         const redirectTo = searchParams.get("redirect") || "/tasks";
         router.push(decodeURIComponent(redirectTo));
