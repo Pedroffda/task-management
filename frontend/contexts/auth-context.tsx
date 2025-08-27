@@ -29,7 +29,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Função para definir cookie
 function setCookie(name: string, value: string, days: number = 7) {
   if (typeof window !== "undefined") {
     const expires = new Date();
@@ -38,7 +37,6 @@ function setCookie(name: string, value: string, days: number = 7) {
   }
 }
 
-// Função para remover cookie
 function removeCookie(name: string) {
   if (typeof window !== "undefined") {
     document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
@@ -62,7 +60,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch {
         setUser(null);
-        // Remover cookie se a autenticação falhar
         removeCookie("access_token");
       } finally {
         setIsLoading(false);
@@ -81,7 +78,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const mapped = mapApiUserToUser(apiUser);
       setUser(mapped);
 
-      // Definir cookie para o middleware usando o token armazenado
       const token = authAPI.getToken();
       if (token) {
         setCookie("access_token", token);
@@ -110,6 +106,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const apiUser = await authAPI.register(name, email, password);
       const mapped = mapApiUserToUser(apiUser);
       setUser(mapped);
+      const token = authAPI.getToken();
+      if (token) {
+        setCookie("access_token", token);
+      }
       return { success: true };
     } catch (error) {
       let errorMessage = "Erro durante o registro. Tente novamente.";
