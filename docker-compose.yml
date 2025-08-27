@@ -1,27 +1,26 @@
-
 networks:
   fastapi_network:
     driver: bridge
 
 services:
-  # Serviço para a aplicação FastAPI
-  # web:
-  #   build: .
-  #   container_name: fastapi_app
-  #   volumes:
-  #     - ./app:/usr/src/app/app
-  #   ports:
-  #     - "8000:8000"
-  #   depends_on:
-  #     - db
-  #   env_file:
-  #     - .env
-  #   networks:
-  #     - fastapi_network
-  #   stdin_open: true
-  #   tty: true
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: task_manager_frontend
+    volumes:
+      - ./frontend:/usr/src/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8001
+    networks:
+      - fastapi_network
+    stdin_open: true
+    tty: true
 
-  # Serviço para o banco de dados PostgreSQL
   db:
     image: postgres:latest
     container_name: task_manager_db
@@ -39,7 +38,7 @@ services:
   api:
     build:
       context: ./backend
-      dockerfile: ../Dockerfile
+      dockerfile: Dockerfile
     container_name: task_manager_api
     ports:
       - "8001:8000"
