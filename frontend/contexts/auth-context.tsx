@@ -7,7 +7,8 @@ import {
   useEffect,
   type ReactNode,
 } from "react";
-import { authService } from "@/lib/mock-data";
+import { authAPI } from "@/lib/api/auth-api";
+import { setupAuthInterceptor } from "@/lib/api/interceptors";
 import type { User } from "@/lib/types";
 
 interface AuthContextType {
@@ -25,19 +26,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Verificar se o usuário já está logado ao iniciar o app
-    const currentUser = authService.getCurrentUser();
-    setUser(currentUser);
-    setIsLoading(false);
+    if (typeof window !== "undefined") {
+      setupAuthInterceptor();
+    }
+
+    const bootstrapAuth = async () => {
+      try {
+        if (authAPI.isAuthenticated()) {
+          const apiUser = await authAPI.getCurrentUser();
+          setUser(mapApiUserToUser(apiUser));
+        }
+      } catch {
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    bootstrapAuth();
   }, []);
 
   const login = async (
     email: string,
     password: string
   ): Promise<User | null> => {
-    const loggedInUser = await authService.login(email, password);
-    setUser(loggedInUser);
-    return loggedInUser;
+    try {
+      const apiUser = await authAPI.login(email, password);
+      const mapped = mapApiUserToUser(apiUser);
+      setUser(mapped);
+      return mapped;
+    } catch {
+      setUser(null);
+      return null;
+    }
   };
 
   const register = async (
@@ -45,13 +66,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     email: string,
     password: string
   ): Promise<User> => {
-    const newUser = await authService.register(name, email, password);
-    setUser(newUser);
-    return newUser;
+    const apiUser = await authAPI.register(name, email, password);
+    const mapped = mapApiUserToUser(apiUser);
+    setUser(mapped);
+    return mapped;
   };
 
   const logout = () => {
-    authService.logout();
+    authAPI.logout();
     setUser(null);
   };
 
@@ -60,6 +82,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
+}
+
+function mapApiUserToUser(apiUser: {
+  id: string;
+  nome: string;
+  email: string;
+}): User {
+  return {
+    id: apiUser.id,
+    name: apiUser.nome,
+    email: apiUser.email,
+  };
 }
 
 export function useAuth() {

@@ -23,7 +23,7 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const taskId = Number.parseInt(params.id);
+  const taskId = params.id;
 
   useEffect(() => {
     loadTask();
@@ -52,7 +52,7 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
 
     try {
       const newStatus = task.status === "COMPLETED" ? "PENDING" : "COMPLETED";
-      const updatedTask = await taskService.updateTask(task.id, {
+      const updatedTask = await taskService.updateTask(Number(task.id), {
         status: newStatus,
       });
       if (updatedTask) {
@@ -68,7 +68,7 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
 
     if (window.confirm("Tem certeza que deseja excluir esta tarefa?")) {
       try {
-        const success = await taskService.deleteTask(task.id);
+        const success = await taskService.deleteTask(Number(task.id));
         if (success) {
           router.push("/tasks");
         }

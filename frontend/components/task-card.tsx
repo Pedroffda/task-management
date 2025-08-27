@@ -117,7 +117,7 @@ export function TaskCard({ task, onToggleStatus, onDelete }: TaskCardProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => onToggleStatus(task.id, task.status)}
+            onClick={() => onToggleStatus(Number(task.id), task.status)}
             className={
               task.status === "COMPLETED" ? "text-blue-600" : "text-green-600"
             }
@@ -129,7 +129,7 @@ export function TaskCard({ task, onToggleStatus, onDelete }: TaskCardProps) {
           <Button
             variant="destructive"
             size="sm"
-            onClick={() => onDelete(task.id)}
+            onClick={() => onDelete(Number(task.id))}
           >
             Excluir
           </Button>

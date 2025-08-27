@@ -51,7 +51,7 @@ function TasksPageContent() {
       });
       if (updatedTask) {
         setTasks((prev) =>
-          prev.map((task) => (task.id === id ? updatedTask : task))
+          prev.map((task) => (task.id === id.toString() ? updatedTask : task))
         );
       }
     } catch (err) {
@@ -64,7 +64,7 @@ function TasksPageContent() {
       try {
         const success = await taskService.deleteTask(id);
         if (success) {
-          setTasks((prev) => prev.filter((task) => task.id !== id));
+          setTasks((prev) => prev.filter((task) => task.id !== id.toString()));
         }
       } catch (err) {
         setError("Falha ao excluir tarefa.");

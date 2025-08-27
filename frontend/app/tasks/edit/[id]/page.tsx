@@ -19,7 +19,7 @@ export default function EditTaskPage({ params }: EditTaskPageProps) {
   const [isLoadingTask, setIsLoadingTask] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const taskId = Number.parseInt(params.id);
+  const taskId = params.id;
 
   useEffect(() => {
     loadTask();
@@ -50,7 +50,7 @@ export default function EditTaskPage({ params }: EditTaskPageProps) {
     setError(null);
 
     try {
-      await taskService.updateTask(task.id, {
+      await taskService.updateTask(Number(task.id), {
         title: data.title,
         description: data.description || "",
         status: data.status,

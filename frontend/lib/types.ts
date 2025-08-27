@@ -1,24 +1,24 @@
 // Tipos TypeScript para o sistema de gerenciamento de tarefas
 
 export interface User {
-    id: number
+    id: string
     name: string
     email: string
-    password: string // Nota: não será exibido na interface
-    creation_date: string
-    update_date: string
+    password?: string
+    creation_date?: string
+    update_date?: string
   }
   
   export interface Task {
-    id: number
+    id: string
     title: string
     description: string
     status: "PENDING" | "COMPLETED"
-    priority: "LOW" | "MEDIUM" | "HIGH" // Corrigido erro de digitação de 'MEDIA' para 'MEDIUM'
+    priority: "LOW" | "MEDIUM" | "HIGH"
     due_date: string | null
     creation_date: string
     update_date: string
-    user_id: number,
+    user_id: string,
     order: number
   }
   

@@ -107,7 +107,7 @@ export function KanbanBoard() {
     if (overId === "PENDING" || overId === "COMPLETED") {
       if (activeTask.status !== overId) {
         try {
-          await taskService.updateTask(activeTask.id, {
+          await taskService.updateTask(Number(activeTask.id), {
             status: overId as "PENDING" | "COMPLETED",
           });
           loadTasks();
