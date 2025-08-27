@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,19 +20,21 @@ import { loginSchema, type LoginFormData } from "@/lib/validations";
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
 
-export default function LoginPage() {
+function LoginPageContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login, user, isLoading: authLoading } = useAuth();
   const { success, error: showError } = useToast();
 
   // Redirecionar usuários já autenticados
   useEffect(() => {
     if (!authLoading && user) {
-      router.push("/tasks");
+      const redirectTo = searchParams.get("redirect") || "/tasks";
+      router.push(decodeURIComponent(redirectTo));
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, router, searchParams]);
 
   const {
     register,
@@ -50,8 +52,9 @@ export default function LoginPage() {
       const result = await login(data.email, data.password);
       if (result.success) {
         success("Login realizado com sucesso!");
-        // Redirecionar para a página de tarefas após login bem-sucedido
-        router.push("/tasks");
+        // Redirecionar para a rota original ou para tasks
+        const redirectTo = searchParams.get("redirect") || "/tasks";
+        router.push(decodeURIComponent(redirectTo));
       } else {
         showError(result.error || "Email ou senha inválidos. Tente novamente.");
       }
@@ -141,5 +144,13 @@ export default function LoginPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Carregando...</div>}>
+      <LoginPageContent />
+    </Suspense>
   );
 }

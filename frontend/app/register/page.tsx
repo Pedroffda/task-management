@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,19 +20,21 @@ import { registerSchema, type RegisterFormData } from "@/lib/validations";
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
 
-export default function RegisterPage() {
+function RegisterPageContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { register: registerUser, user, isLoading: authLoading } = useAuth();
   const { success, error: showError } = useToast();
 
   // Redirecionar usuários já autenticados
   useEffect(() => {
     if (!authLoading && user) {
-      router.push("/tasks");
+      const redirectTo = searchParams.get("redirect") || "/tasks";
+      router.push(decodeURIComponent(redirectTo));
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, router, searchParams]);
 
   const {
     register,
@@ -50,8 +52,9 @@ export default function RegisterPage() {
       const result = await registerUser(data.name, data.email, data.password);
       if (result.success) {
         success("Conta criada com sucesso!");
-        // Redirecionar para a página de tarefas após registro bem-sucedido
-        router.push("/tasks");
+        // Redirecionar para a rota original ou para tasks
+        const redirectTo = searchParams.get("redirect") || "/tasks";
+        router.push(decodeURIComponent(redirectTo));
       } else {
         showError(
           result.error || "Ocorreu um erro durante o registro. Tente novamente."
@@ -150,5 +153,13 @@ export default function RegisterPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div>Carregando...</div>}>
+      <RegisterPageContent />
+    </Suspense>
   );
 }
