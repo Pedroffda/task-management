@@ -5,30 +5,30 @@ export interface User {
     name: string
     email: string
     password?: string
-    creation_date?: string
-    update_date?: string
+    created_at?: string
+    updated_at?: string
   }
   
   export interface Task {
     id: string
-    title: string
-    description: string
-    status: "PENDING" | "COMPLETED"
-    priority: "LOW" | "MEDIUM" | "HIGH"
-    due_date: string | null
-    creation_date: string
-    update_date: string
-    user_id: string,
-    order: number
+    titulo: string
+    descricao: string
+    status: "PENDENTE" | "CONCLUIDA"
+    prioridade: "BAIXA" | "MEDIA" | "ALTA"
+    data_vencimento: string | null
+    created_at: string
+    updated_at: string
+    usuario_id: string,
+    ordem: number
   }
   
   // Tipos específicos da interface
-  export type TaskStatus = "PENDING" | "COMPLETED"
-  export type TaskPriority = "LOW" | "MEDIUM" | "HIGH"
+  export type TaskStatus = "PENDENTE" | "CONCLUIDA"
+  export type TaskPriority = "BAIXA" | "MEDIA" | "ALTA"
   
   export interface TaskFilters {
-    status: "ALL" | TaskStatus
-    priority: "ALL" | TaskPriority
+    status: "PENDENTE" | "CONCLUIDA"
+    prioridade: "BAIXA" | "MEDIA" | "ALTA"
     search: string
   }
   

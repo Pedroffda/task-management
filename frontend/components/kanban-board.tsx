@@ -10,16 +10,18 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  closestCorners,
 } from "@dnd-kit/core";
 import {
   SortableContext,
+  arrayMove,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { KanbanColumn } from "@/components/kanban-column";
 import { KanbanTaskCard } from "@/components/kanban-task-card";
-import { taskService } from "@/lib/mock-data";
-import type { Task } from "@/lib/types";
+import { taskService } from "@/lib/services/task-service";
+import type { Task, TaskUpdate } from "@/lib/types/task";
 
 export function KanbanBoard() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -42,8 +44,9 @@ export function KanbanBoard() {
   const loadTasks = async () => {
     try {
       setLoading(true);
+      setError(null); // Clear previous errors
       const fetchedTasks = await taskService.getTasks();
-      setTasks(fetchedTasks);
+      setTasks(fetchedTasks.data as Task[]);
     } catch (err) {
       setError("Falha ao carregar tarefas. Tente novamente.");
     } finally {
@@ -52,12 +55,12 @@ export function KanbanBoard() {
   };
 
   const pendingTasks = tasks
-    .filter((task) => task.status === "PENDING")
-    .sort((a, b) => a.order - b.order);
+    .filter((task) => task.status === "PENDENTE")
+    .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
 
   const completedTasks = tasks
-    .filter((task) => task.status === "COMPLETED")
-    .sort((a, b) => a.order - b.order);
+    .filter((task) => task.status === "CONCLUIDA")
+    .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
@@ -75,82 +78,95 @@ export function KanbanBoard() {
     const activeTask = tasks.find((t) => t.id === activeId);
     if (!activeTask) return;
 
-    // Handle dropping over a column
-    if (overId === "PENDING" || overId === "COMPLETED") {
-      if (activeTask.status !== overId) {
-        setTasks((tasks) =>
-          tasks.map((task) =>
-            task.id === activeId
-              ? { ...task, status: overId as "PENDING" | "COMPLETED" }
-              : task
-          )
-        );
-      }
+    // This is the optimistic update for moving between columns
+    const overIsColumn = overId === "PENDENTE" || overId === "CONCLUIDA";
+    if (overIsColumn && activeTask.status !== overId) {
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.id === activeId
+            ? { ...task, status: overId as "PENDENTE" | "CONCLUIDA" }
+            : task
+        )
+      );
     }
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
     setActiveTask(null);
+    const { active, over } = event;
 
-    if (!over) return;
+    if (!over || active.id === over.id) {
+      return;
+    }
 
     const activeId = active.id;
     const overId = over.id;
 
-    const activeTask = tasks.find((t) => t.id === activeId);
-    const overTask = tasks.find((t) => t.id === overId);
+    // The state might have been updated by onDragOver. We work with the current `tasks` state.
+    let newTasks = [...tasks];
 
+    const activeTask = newTasks.find((t) => t.id === activeId);
     if (!activeTask) return;
 
-    // If dropping over a column, just update status
-    if (overId === "PENDING" || overId === "COMPLETED") {
-      if (activeTask.status !== overId) {
-        try {
-          await taskService.updateTask(Number(activeTask.id), {
-            status: overId as "PENDING" | "COMPLETED",
-          });
-          loadTasks();
-        } catch (err) {
-          setError("Falha ao atualizar status da tarefa.");
-        }
-      }
-      return;
+    const overTask = newTasks.find((t) => t.id === overId);
+
+    // Determine the destination status and perform reordering
+    const destinationStatus = overTask
+      ? overTask.status
+      : (overId as "PENDENTE" | "CONCLUIDA");
+
+    // Update status if it changed (handles drops on tasks in other columns)
+    if (activeTask.status !== destinationStatus) {
+      activeTask.status = destinationStatus;
     }
 
-    // If dropping over another task, reorder
-    if (overTask && activeTask.id !== overTask.id) {
-      const activeIndex = tasks.findIndex((t) => t.id === activeId);
-      const overIndex = tasks.findIndex((t) => t.id === overId);
+    const activeIndex = newTasks.findIndex((t) => t.id === activeId);
+    let overIndex = newTasks.findIndex((t) => t.id === overId);
 
-      if (activeIndex !== -1 && overIndex !== -1) {
-        const newTasks = [...tasks];
-        const [movedTask] = newTasks.splice(activeIndex, 1);
+    // If dropping on a column, find the last index for that status
+    if (overIndex === -1 && (overId === "PENDENTE" || overId === "CONCLUIDA")) {
+      const tasksInColumn = newTasks.filter((t) => t.status === overId);
+      overIndex = activeIndex + tasksInColumn.length; // Place it at the end of its new column
+    }
 
-        // Update status if moving to different column
-        if (overTask.status !== movedTask.status) {
-          movedTask.status = overTask.status;
+    // Perform the array move for reordering
+    if (activeIndex !== overIndex) {
+      newTasks = arrayMove(newTasks, activeIndex, overIndex);
+    }
+
+    // Recalculate 'ordem' for the affected column(s)
+    const originalStatus = tasks.find((t) => t.id === activeId)?.status;
+    const finalStatus = activeTask.status;
+
+    const columnsToUpdate = new Set([originalStatus, finalStatus]);
+
+    columnsToUpdate.forEach((status) => {
+      if (!status) return;
+      const tasksInColumn = newTasks.filter((t) => t.status === status);
+      tasksInColumn.forEach((task, index) => {
+        const taskInNewTasks = newTasks.find((t) => t.id === task.id);
+        if (taskInNewTasks) {
+          taskInNewTasks.ordem = index;
         }
+      });
+    });
 
-        newTasks.splice(overIndex, 0, movedTask);
+    // Set the final state optimistically
+    setTasks(newTasks);
 
-        // Update order for tasks in the same status
-        const statusTasks = newTasks.filter(
-          (t) => t.status === movedTask.status
-        );
-        statusTasks.forEach((task, index) => {
-          task.order = index;
-        });
+    const finalTask = newTasks.find((t) => t.id === activeId);
+    if (!finalTask) return;
 
-        setTasks(newTasks);
-
-        try {
-          await taskService.reorderTasks(newTasks);
-        } catch (err) {
-          setError("Falha ao reordenar tarefas.");
-          loadTasks(); // Reload on error
-        }
-      }
+    // Persist the changes to the backend
+    try {
+      await taskService.updateTask(activeId.toString(), {
+        status: finalTask.status,
+        ordem: finalTask.ordem,
+      } as TaskUpdate);
+    } catch (err) {
+      setError("Falha ao atualizar a tarefa. Revertendo alterações.");
+      // On error, revert to the original state by reloading
+      loadTasks();
     }
   };
 
@@ -178,10 +194,11 @@ export function KanbanBoard() {
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
+          collisionDetection={closestCorners}
         >
           <div className="grid gap-6 md:grid-cols-2">
             <KanbanColumn
-              id="PENDING"
+              id="PENDENTE"
               title="Pendente"
               count={pendingTasks.length}
               color="blue"
@@ -197,7 +214,7 @@ export function KanbanBoard() {
             </KanbanColumn>
 
             <KanbanColumn
-              id="COMPLETED"
+              id="CONCLUIDA"
               title="Concluído"
               count={completedTasks.length}
               color="green"

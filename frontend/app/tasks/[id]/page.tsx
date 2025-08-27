@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { taskService } from "@/lib/mock-data";
+import { taskService } from "@/lib/services/task-service";
 import type { Task } from "@/lib/types";
 
 interface TaskDetailPageProps {
@@ -19,7 +19,7 @@ interface TaskDetailPageProps {
 }
 
 export default function TaskDetailPage({ params }: TaskDetailPageProps) {
-  const [task, setTask] = useState<Task | null>(null);
+  const [task, setTask] = useState<Task | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -33,10 +33,10 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
     try {
       setIsLoading(true);
       const tasks = await taskService.getTasks();
-      const foundTask = tasks.find((t) => t.id === taskId);
+      const foundTask = tasks.data.find((t) => t.id === taskId);
 
       if (foundTask) {
-        setTask(foundTask);
+        setTask(foundTask as unknown as Task);
       } else {
         setError("Tarefa não encontrada.");
       }
@@ -51,12 +51,12 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
     if (!task) return;
 
     try {
-      const newStatus = task.status === "COMPLETED" ? "PENDING" : "COMPLETED";
-      const updatedTask = await taskService.updateTask(Number(task.id), {
+      const newStatus = task.status === "CONCLUIDA" ? "PENDENTE" : "CONCLUIDA";
+      const updatedTask = await taskService.updateTask(task.id, {
         status: newStatus,
       });
       if (updatedTask) {
-        setTask(updatedTask);
+        setTask(updatedTask as unknown as Task);
       }
     } catch (err) {
       setError("Falha ao atualizar status da tarefa.");
@@ -68,23 +68,21 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
 
     if (window.confirm("Tem certeza que deseja excluir esta tarefa?")) {
       try {
-        const success = await taskService.deleteTask(Number(task.id));
-        if (success) {
-          router.push("/tasks");
-        }
+        await taskService.deleteTask(task.id);
+        router.push("/tasks");
       } catch (err) {
         setError("Falha ao excluir tarefa.");
       }
     }
   };
 
-  const getPriorityColor = (priority: Task["priority"]) => {
+  const getPriorityColor = (priority: Task["prioridade"]) => {
     switch (priority) {
-      case "HIGH":
+      case "ALTA":
         return "bg-red-100 text-red-800 border-red-200";
-      case "MEDIUM":
+      case "MEDIA":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "LOW":
+      case "BAIXA":
         return "bg-green-100 text-green-800 border-green-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
@@ -92,18 +90,18 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
   };
 
   const getStatusColor = (status: Task["status"]) => {
-    return status === "COMPLETED"
+    return status === "CONCLUIDA"
       ? "bg-green-100 text-green-800 border-green-200"
       : "bg-blue-100 text-blue-800 border-blue-200";
   };
 
-  const getPriorityLabel = (priority: Task["priority"]) => {
+  const getPriorityLabel = (priority: Task["prioridade"]) => {
     switch (priority) {
-      case "HIGH":
+      case "ALTA":
         return "Alta";
-      case "MEDIUM":
+      case "MEDIA":
         return "Média";
-      case "LOW":
+      case "BAIXA":
         return "Baixa";
       default:
         return priority;
@@ -111,7 +109,7 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
   };
 
   const getStatusLabel = (status: Task["status"]) => {
-    return status === "COMPLETED" ? "Concluída" : "Pendente";
+    return status === "CONCLUIDA" ? "Concluída" : "Pendente";
   };
 
   if (isLoading) {
@@ -158,20 +156,20 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
             <div className="flex items-start justify-between">
               <CardTitle
                 className={`text-2xl ${
-                  task.status === "COMPLETED"
+                  task.status === "CONCLUIDA"
                     ? "line-through text-muted-foreground"
                     : ""
                 }`}
               >
-                {task.title}
+                {task.titulo}
               </CardTitle>
               <div className="flex gap-2">
                 <Badge
                   variant="outline"
-                  className={getPriorityColor(task.priority)}
+                  className={getPriorityColor(task.prioridade)}
                 >
                   <Flag className="w-3 h-3 mr-1" />
-                  {getPriorityLabel(task.priority)}
+                  {getPriorityLabel(task.prioridade)}
                 </Badge>
                 <Badge
                   variant="outline"
@@ -183,28 +181,31 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
-            {task.description && (
+            {task.descricao && (
               <div className="space-y-2">
                 <h3 className="font-semibold">Descrição</h3>
                 <p
                   className={`text-sm leading-relaxed ${
-                    task.status === "COMPLETED"
+                    task.status === "CONCLUIDA"
                       ? "text-muted-foreground"
                       : "text-foreground"
                   }`}
                 >
-                  {task.description}
+                  {task.descricao}
                 </p>
               </div>
             )}
 
             <div className="grid gap-4 md:grid-cols-2">
-              {task.due_date && (
+              {task.data_vencimento && (
                 <div className="flex items-center gap-2 text-sm">
                   <Calendar className="w-4 h-4 text-muted-foreground" />
                   <span className="font-medium">Data de Vencimento:</span>
                   <span>
-                    {format(new Date(task.due_date), "dd 'de' MMMM 'de' yyyy")}
+                    {format(
+                      new Date(task.data_vencimento),
+                      "dd 'de' MMMM 'de' yyyy"
+                    )}
                   </span>
                 </div>
               )}
@@ -214,7 +215,7 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
                 <span className="font-medium">Criado em:</span>
                 <span>
                   {format(
-                    new Date(task.creation_date),
+                    new Date(task.created_at),
                     "dd 'de' MMMM 'de' yyyy 'às' HH:mm"
                   )}
                 </span>
@@ -225,7 +226,7 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
                 <span className="font-medium">Última Atualização:</span>
                 <span>
                   {format(
-                    new Date(task.update_date),
+                    new Date(task.updated_at),
                     "dd 'de' MMMM 'de' yyyy 'às' HH:mm"
                   )}
                 </span>
@@ -243,12 +244,12 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
                 variant="outline"
                 onClick={handleToggleStatus}
                 className={
-                  task.status === "COMPLETED"
+                  task.status === "CONCLUIDA"
                     ? "text-blue-600"
                     : "text-green-600"
                 }
               >
-                {task.status === "COMPLETED"
+                {task.status === "CONCLUIDA"
                   ? "Marcar como Pendente"
                   : "Marcar como Concluída"}
               </Button>

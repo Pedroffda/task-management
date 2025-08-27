@@ -35,25 +35,30 @@ export function TaskForm({
   const router = useRouter();
   const isEditing = !!task;
 
+  const formatDateForInput = (dateString: string | null | undefined) => {
+    if (!dateString) return null;
+    return dateString.split("T")[0];
+  };
+
   const {
     register,
     handleSubmit,
     setValue,
     watch,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
-      title: task?.title || "",
-      description: task?.description || "",
-      status: task?.status || "PENDING",
-      priority: task?.priority || "MEDIUM",
-      due_date: task?.due_date || "",
+      titulo: task?.titulo || "",
+      descricao: task?.descricao || "",
+      status: task?.status || "PENDENTE",
+      prioridade: task?.prioridade || "MEDIA",
+      data_vencimento: formatDateForInput(task?.data_vencimento) || null,
     },
   });
 
   const watchedStatus = watch("status");
-  const watchedPriority = watch("priority");
+  const watchedPriority = watch("prioridade");
 
   const handleCancel = () => {
     router.back();
@@ -79,14 +84,14 @@ export function TaskForm({
               <div className="space-y-2">
                 <Label htmlFor="title">Título *</Label>
                 <Input
-                  id="title"
+                  id="titulo"
                   placeholder="Digite o título da tarefa"
-                  {...register("title")}
-                  className={errors.title ? "border-destructive" : ""}
+                  {...register("titulo")}
+                  className={errors.titulo ? "border-destructive" : ""}
                 />
-                {errors.title && (
+                {errors.titulo && (
                   <p className="text-sm text-destructive">
-                    {errors.title.message}
+                    {errors.titulo.message}
                   </p>
                 )}
               </div>
@@ -94,15 +99,15 @@ export function TaskForm({
               <div className="space-y-2">
                 <Label htmlFor="description">Descrição</Label>
                 <Textarea
-                  id="description"
+                  id="descricao"
                   placeholder="Digite a descrição da tarefa (opcional)"
                   rows={4}
-                  {...register("description")}
-                  className={errors.description ? "border-destructive" : ""}
+                  {...register("descricao")}
+                  className={errors.descricao ? "border-destructive" : ""}
                 />
-                {errors.description && (
+                {errors.descricao && (
                   <p className="text-sm text-destructive">
-                    {errors.description.message}
+                    {errors.descricao.message}
                   </p>
                 )}
               </div>
@@ -113,15 +118,15 @@ export function TaskForm({
                   <Select
                     value={watchedStatus}
                     onValueChange={(value) =>
-                      setValue("status", value as "PENDING" | "COMPLETED")
+                      setValue("status", value as "PENDENTE" | "CONCLUIDA")
                     }
                   >
                     <SelectTrigger id="status">
                       <SelectValue placeholder="Selecione o status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="PENDING">Pendente</SelectItem>
-                      <SelectItem value="COMPLETED">Concluída</SelectItem>
+                      <SelectItem value="PENDENTE">Pendente</SelectItem>
+                      <SelectItem value="CONCLUIDA">Concluída</SelectItem>
                     </SelectContent>
                   </Select>
                   {errors.status && (
@@ -136,37 +141,41 @@ export function TaskForm({
                   <Select
                     value={watchedPriority}
                     onValueChange={(value) =>
-                      setValue("priority", value as "LOW" | "MEDIUM" | "HIGH")
+                      setValue(
+                        "prioridade",
+                        value as "BAIXA" | "MEDIA" | "ALTA"
+                      )
                     }
                   >
                     <SelectTrigger id="priority">
                       <SelectValue placeholder="Selecione a prioridade" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="LOW">Baixa</SelectItem>
-                      <SelectItem value="MEDIUM">Média</SelectItem>
-                      <SelectItem value="HIGH">Alta</SelectItem>
+                      <SelectItem value="BAIXA">Baixa</SelectItem>
+                      <SelectItem value="MEDIA">Média</SelectItem>
+                      <SelectItem value="ALTA">Alta</SelectItem>
                     </SelectContent>
                   </Select>
-                  {errors.priority && (
+                  {errors.prioridade && (
                     <p className="text-sm text-destructive">
-                      {errors.priority.message}
+                      {errors.prioridade.message}
                     </p>
                   )}
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="due_date">Data de Vencimento</Label>
+                <Label htmlFor="data_vencimento">Data de Vencimento</Label>
                 <Input
-                  id="due_date"
+                  id="data_vencimento"
                   type="date"
-                  {...register("due_date")}
-                  className={errors.due_date ? "border-destructive" : ""}
+                  {...register("data_vencimento")}
+                  className={errors.data_vencimento ? "border-destructive" : ""}
                 />
-                {errors.due_date && (
+                {errors.data_vencimento && (
                   <p className="text-sm text-destructive">
-                    {errors.due_date.message}
+                    {errors.data_vencimento.message ||
+                      "Data de vencimento inválida"}
                   </p>
                 )}
               </div>

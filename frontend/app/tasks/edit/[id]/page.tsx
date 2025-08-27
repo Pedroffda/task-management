@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { TaskForm } from "@/components/task-form";
-import { taskService } from "@/lib/mock-data";
-import type { Task } from "@/lib/types";
-import type { TaskFormData } from "@/lib/validations";
+import { taskService } from "@/lib/services/task-service";
+import type { Task, TaskPriority, TaskStatus } from "@/lib/types";
+import type { TaskFormData, taskSchema } from "@/lib/validations";
 
 interface EditTaskPageProps {
   params: {
@@ -14,7 +14,7 @@ interface EditTaskPageProps {
 }
 
 export default function EditTaskPage({ params }: EditTaskPageProps) {
-  const [task, setTask] = useState<Task | null>(null);
+  const [task, setTask] = useState<Task | undefined>();
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingTask, setIsLoadingTask] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,11 +28,11 @@ export default function EditTaskPage({ params }: EditTaskPageProps) {
   const loadTask = async () => {
     try {
       setIsLoadingTask(true);
-      const tasks = await taskService.getTasks();
-      const foundTask = tasks.find((t) => t.id === taskId);
+      const foundTask = await taskService.getTaskById(taskId);
 
       if (foundTask) {
-        setTask(foundTask);
+        setTask(foundTask as unknown as Task);
+        console.log(foundTask);
       } else {
         setError("Tarefa não encontrada.");
       }
@@ -50,14 +50,12 @@ export default function EditTaskPage({ params }: EditTaskPageProps) {
     setError(null);
 
     try {
-      await taskService.updateTask(Number(task.id), {
-        title: data.title,
-        description: data.description || "",
-        status: data.status,
-        priority: data.priority,
-        due_date: data.due_date || null,
-        order: task.order,
-        user_id: task.user_id,
+      await taskService.updateTask(task.id, {
+        titulo: data.titulo,
+        descricao: data.descricao || "",
+        status: data.status as TaskStatus,
+        prioridade: data.prioridade as TaskPriority,
+        data_vencimento: data.data_vencimento || "",
       });
 
       // Redirecionar para a lista de tarefas em caso de sucesso

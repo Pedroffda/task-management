@@ -6,22 +6,22 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { Task } from "@/lib/types";
+import type { Task } from "@/lib/types/task";
 
 interface TaskCardProps {
   task: Task;
-  onToggleStatus: (id: number, currentStatus: Task["status"]) => void;
-  onDelete: (id: number) => void;
+  onToggleStatus: (id: string, currentStatus: Task["status"]) => void;
+  onDelete: (id: string) => void;
 }
 
 export function TaskCard({ task, onToggleStatus, onDelete }: TaskCardProps) {
-  const getPriorityColor = (priority: Task["priority"]) => {
+  const getPriorityColor = (priority: Task["prioridade"]) => {
     switch (priority) {
-      case "HIGH":
+      case "ALTA":
         return "bg-red-100 text-red-800 border-red-200";
-      case "MEDIUM":
+      case "MEDIA":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "LOW":
+      case "BAIXA":
         return "bg-green-100 text-green-800 border-green-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
@@ -29,18 +29,18 @@ export function TaskCard({ task, onToggleStatus, onDelete }: TaskCardProps) {
   };
 
   const getStatusColor = (status: Task["status"]) => {
-    return status === "COMPLETED"
+    return status === "CONCLUIDA"
       ? "bg-green-100 text-green-800 border-green-200"
       : "bg-blue-100 text-blue-800 border-blue-200";
   };
 
-  const getPriorityLabel = (priority: Task["priority"]) => {
+  const getPriorityLabel = (priority: Task["prioridade"]) => {
     switch (priority) {
-      case "HIGH":
+      case "ALTA":
         return "Alta";
-      case "MEDIUM":
+      case "MEDIA":
         return "Média";
-      case "LOW":
+      case "BAIXA":
         return "Baixa";
       default:
         return priority;
@@ -48,7 +48,7 @@ export function TaskCard({ task, onToggleStatus, onDelete }: TaskCardProps) {
   };
 
   const getStatusLabel = (status: Task["status"]) => {
-    return status === "COMPLETED" ? "Concluída" : "Pendente";
+    return status === "CONCLUIDA" ? "Concluída" : "Pendente";
   };
 
   return (
@@ -57,20 +57,20 @@ export function TaskCard({ task, onToggleStatus, onDelete }: TaskCardProps) {
         <div className="flex items-start justify-between">
           <CardTitle
             className={`text-lg ${
-              task.status === "COMPLETED"
+              task.status === "CONCLUIDA"
                 ? "line-through text-muted-foreground"
                 : ""
             }`}
           >
-            {task.title}
+            {task.titulo}
           </CardTitle>
           <div className="flex gap-2">
             <Badge
               variant="outline"
-              className={getPriorityColor(task.priority)}
+              className={getPriorityColor(task.prioridade)}
             >
               <Flag className="w-3 h-3 mr-1" />
-              {getPriorityLabel(task.priority)}
+              {getPriorityLabel(task.prioridade)}
             </Badge>
             <Badge variant="outline" className={getStatusColor(task.status)}>
               {getStatusLabel(task.status)}
@@ -79,23 +79,23 @@ export function TaskCard({ task, onToggleStatus, onDelete }: TaskCardProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {task.description && (
+        {task.descricao && (
           <p
             className={`text-sm ${
-              task.status === "COMPLETED"
+              task.status === "CONCLUIDA"
                 ? "text-muted-foreground"
                 : "text-foreground"
             }`}
           >
-            {task.description}
+            {task.descricao}
           </p>
         )}
 
-        {task.due_date && (
+        {task.data_vencimento && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Calendar className="w-4 h-4" />
             <span>
-              Vencimento: {format(new Date(task.due_date), "dd/MM/yyyy")}
+              Vencimento: {format(new Date(task.data_vencimento), "dd/MM/yyyy")}
             </span>
           </div>
         )}
@@ -103,7 +103,7 @@ export function TaskCard({ task, onToggleStatus, onDelete }: TaskCardProps) {
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Clock className="w-3 h-3" />
           <span>
-            Criado em: {format(new Date(task.creation_date), "dd/MM/yyyy")}
+            Criado em: {format(new Date(task.created_at), "dd/MM/yyyy")}
           </span>
         </div>
 
@@ -117,19 +117,19 @@ export function TaskCard({ task, onToggleStatus, onDelete }: TaskCardProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => onToggleStatus(Number(task.id), task.status)}
+            onClick={() => onToggleStatus(task.id, task.status)}
             className={
-              task.status === "COMPLETED" ? "text-blue-600" : "text-green-600"
+              task.status === "CONCLUIDA" ? "text-blue-600" : "text-green-600"
             }
           >
-            {task.status === "COMPLETED"
+            {task.status === "CONCLUIDA"
               ? "Marcar como Pendente"
               : "Marcar como Concluída"}
           </Button>
           <Button
             variant="destructive"
             size="sm"
-            onClick={() => onDelete(Number(task.id))}
+            onClick={() => onDelete(task.id)}
           >
             Excluir
           </Button>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { TaskForm } from "@/components/task-form";
-import { taskService } from "@/lib/mock-data";
+import { taskService } from "@/lib/services/task-service";
 import type { TaskFormData } from "@/lib/validations";
 
 export default function NewTaskPage() {
@@ -17,12 +17,12 @@ export default function NewTaskPage() {
 
     try {
       await taskService.createTask({
-        title: data.title,
-        description: data.description || "",
+        titulo: data.titulo,
+        descricao: data.descricao || "",
         status: data.status,
-        priority: data.priority,
-        due_date: data.due_date || null,
-        order: 0,
+        prioridade: data.prioridade,
+        data_vencimento: data.data_vencimento || "",
+        ordem: 0,
       });
 
       // Redirecionar para a lista de tarefas em caso de sucesso

@@ -8,8 +8,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { TaskCard } from "@/components/task-card";
 import { TaskFiltersComponent } from "@/components/task-filters";
 import { ProtectedRoute } from "@/components/protected-route";
-import { taskService } from "@/lib/mock-data";
-import type { Task, TaskFilters } from "@/lib/types";
+import { taskService } from "@/lib/services/task-service";
+import type { Task, TaskFilters, PaginatedResponse } from "@/lib/types/task";
 
 const TASKS_PER_PAGE = 6;
 
@@ -19,8 +19,8 @@ function TasksPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<TaskFilters>({
-    status: "ALL",
-    priority: "ALL",
+    status: undefined,
+    prioridade: undefined,
     search: "",
   });
 
@@ -31,8 +31,9 @@ function TasksPageContent() {
   const loadTasks = async () => {
     try {
       setLoading(true);
-      const fetchedTasks = await taskService.getTasks();
-      setTasks(fetchedTasks);
+      const fetchedTasks: PaginatedResponse<Task> =
+        await taskService.getTasks();
+      setTasks(fetchedTasks.data);
     } catch (err) {
       setError("Falha ao carregar tarefas. Tente novamente.");
     } finally {
@@ -41,11 +42,12 @@ function TasksPageContent() {
   };
 
   const handleToggleStatus = async (
-    id: number,
+    id: string,
     currentStatus: Task["status"]
   ) => {
     try {
-      const newStatus = currentStatus === "COMPLETED" ? "PENDING" : "COMPLETED";
+      const newStatus =
+        currentStatus === "CONCLUIDA" ? "PENDENTE" : "CONCLUIDA";
       const updatedTask = await taskService.updateTask(id, {
         status: newStatus,
       });
@@ -59,13 +61,11 @@ function TasksPageContent() {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm("Tem certeza que deseja excluir esta tarefa?")) {
       try {
-        const success = await taskService.deleteTask(id);
-        if (success) {
-          setTasks((prev) => prev.filter((task) => task.id !== id.toString()));
-        }
+        await taskService.deleteTask(id);
+        setTasks((prev) => prev.filter((task) => task.id !== id));
       } catch (err) {
         setError("Falha ao excluir tarefa.");
       }
@@ -75,12 +75,13 @@ function TasksPageContent() {
   const filteredTasks = useMemo(() => {
     return tasks.filter((task) => {
       const matchesStatus =
-        filters.status === "ALL" || task.status === filters.status;
+        filters.status === undefined || task.status === filters.status;
       const matchesPriority =
-        filters.priority === "ALL" || task.priority === filters.priority;
+        filters.prioridade === undefined ||
+        task.prioridade === filters.prioridade;
       const matchesSearch =
-        filters.search === "" ||
-        task.title.toLowerCase().includes(filters.search.toLowerCase());
+        filters.search === undefined ||
+        task.titulo.toLowerCase().includes(filters.search!.toLowerCase());
 
       return matchesStatus && matchesPriority && matchesSearch;
     });
@@ -125,7 +126,6 @@ function TasksPageContent() {
         )}
 
         <TaskFiltersComponent filters={filters} onFiltersChange={setFilters} />
-
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
@@ -191,7 +191,6 @@ function TasksPageContent() {
     </div>
   );
 }
-
 export default function TasksPage() {
   return (
     <ProtectedRoute>

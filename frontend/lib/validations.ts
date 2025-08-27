@@ -19,11 +19,11 @@ export type RegisterFormData = z.infer<typeof registerSchema>
 
 // Esquema de validação do formulário de tarefa
 export const taskSchema = z.object({
-  title: z.string().min(1, "Título é obrigatório"),
-  description: z.string().optional(),
-  status: z.enum(["PENDING", "COMPLETED"]),
-  priority: z.enum(["LOW", "MEDIUM", "HIGH"]),
-  due_date: z.string().optional().nullable(),
+  titulo: z.string().min(1, "Título é obrigatório"),
+  descricao: z.string().optional(),
+  status: z.enum(["PENDENTE", "CONCLUIDA"]),
+  prioridade: z.enum(["BAIXA", "MEDIA", "ALTA"]),
+  data_vencimento: z.string().optional().nullable(),
 })
 
 export type TaskFormData = z.infer<typeof taskSchema>

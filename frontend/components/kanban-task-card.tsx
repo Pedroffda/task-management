@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { Task } from "@/lib/types";
+import type { Task } from "@/lib/types/task";
 
 interface KanbanTaskCardProps {
   task: Task;
@@ -35,13 +35,13 @@ export function KanbanTaskCard({
     transition,
   };
 
-  const getPriorityColor = (priority: Task["priority"]) => {
+  const getPriorityColor = (priority: Task["prioridade"]) => {
     switch (priority) {
-      case "HIGH":
+      case "ALTA":
         return "bg-red-100 text-red-800 border-red-200";
-      case "MEDIUM":
+      case "MEDIA":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "LOW":
+      case "BAIXA":
         return "bg-green-100 text-green-800 border-green-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
@@ -58,33 +58,33 @@ export function KanbanTaskCard({
         <div className="flex items-start gap-2">
           <div className="flex-1">
             <CardTitle className="text-sm font-medium line-clamp-2">
-              {task.title}
+              {task.titulo}
             </CardTitle>
           </div>
           <div className="flex items-center gap-1">
             <Badge
               variant="outline"
-              className={getPriorityColor(task.priority)}
+              className={getPriorityColor(task.prioridade)}
               //   variant="outline"
             >
               <Flag className="w-3 h-3 mr-1" />
-              {task.priority}
+              {task.prioridade}
             </Badge>
             <GripVertical className="w-4 h-4 text-muted-foreground" />
           </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        {task.description && (
+        {task.descricao && (
           <p className="text-xs text-muted-foreground line-clamp-2">
-            {task.description}
+            {task.descricao}
           </p>
         )}
 
-        {task.due_date && (
+        {task.data_vencimento && (
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Calendar className="w-3 h-3" />
-            <span>{format(new Date(task.due_date), "MMM dd")}</span>
+            <span>{format(new Date(task.data_vencimento), "MMM dd")}</span>
           </div>
         )}
 

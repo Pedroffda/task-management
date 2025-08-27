@@ -7,4 +7,10 @@ export const API_ENDPOINTS = {
     REFRESH: '/api/v1/auth/refresh',
     ME: '/api/v1/auth/me',
   },
+  TASKS: {
+    LIST: '/api/v1/tarefas',
+    CREATE: '/api/v1/tarefas',
+    UPDATE: '/api/v1/tarefas/{id}',
+    DELETE: '/api/v1/tarefas/{id}',
+  },
 } as const 
