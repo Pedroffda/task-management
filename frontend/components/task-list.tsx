@@ -262,7 +262,11 @@ export default function TaskList() {
                   </div>
                   <CardDescription>
                     Vence em:{" "}
-                    {new Date(task.data_vencimento).toLocaleDateString("pt-BR")}
+                    {task.data_vencimento
+                      ? new Date(task.data_vencimento).toLocaleDateString(
+                          "pt-BR"
+                        )
+                      : "Não definida"}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

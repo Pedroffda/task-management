@@ -67,9 +67,10 @@ function TasksPageContent() {
         await taskService.deleteTask(id);
         setTasks((prev) => prev.filter((task) => task.id !== id));
       } catch (err) {
-        setError("Falha ao excluir tarefa.");
+        // setError("Falha ao excluir tarefa.");
       }
     }
+    loadTasks();
   };
 
   const filteredTasks = useMemo(() => {

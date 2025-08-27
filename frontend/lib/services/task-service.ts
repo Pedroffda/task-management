@@ -55,7 +55,7 @@ class TaskService {
         body: JSON.stringify(taskData),
       }
     )
-    return response.data[0]
+    return response.data[0] 
   }
 
   async updateTask(id: string, taskData: TaskUpdate): Promise<Task> {

@@ -7,6 +7,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { AuthProvider } from "@/contexts/auth-context";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/toaster";
 
 export const metadata: Metadata = {
   title: "TaskManager",
@@ -35,6 +36,7 @@ export default function RootLayout({
             <Header />
             <main className="flex-1">{children}</main>
             <Footer />
+            <Toaster />
           </ThemeProvider>
         </AuthProvider>
       </body>

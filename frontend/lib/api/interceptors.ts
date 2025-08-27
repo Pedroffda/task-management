@@ -1,6 +1,6 @@
 import { authAPI } from './auth-api'
 
-// Interceptor para lidar com tokens expirados
+// Interceptor para lidar com tokens expirados ou inválidos
 export function setupAuthInterceptor() {
   // Interceptar todas as requisições fetch
   const originalFetch = window.fetch
@@ -8,28 +8,14 @@ export function setupAuthInterceptor() {
   window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const response = await originalFetch(input, init)
     
-    // Se receber 401 (Unauthorized), tentar renovar o token
+    // Se receber 401 (Unauthorized), fazer logout imediatamente
     if (response.status === 401) {
-      try {
-        await authAPI.refreshToken()
-        
-        // Reenviar a requisição original com o novo token
-        const newInit: RequestInit = { ...(init || {}) }
-        const token = authAPI.getToken()
-        if (token) {
-          newInit.headers = {
-            ...(newInit.headers || {}),
-            Authorization: `Bearer ${token}`,
-          }
-        }
-        
-        return originalFetch(input, newInit)
-      } catch (error) {
-        // Se falhar ao renovar, fazer logout
-        authAPI.logout()
-        window.location.href = '/login'
-        throw error
-      }
+      // Fazer logout e redirecionar para login
+      authAPI.logout()
+      // Remover cookie
+      document.cookie = 'access_token=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
+      window.location.href = '/login'
+      throw new Error('Token expirado ou inválido')
     }
     
     return response

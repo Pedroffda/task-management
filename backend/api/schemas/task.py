@@ -8,7 +8,7 @@ class TaskCreate(BaseModel):
     descricao: str
     status: StatusTarefa
     prioridade: PrioridadeTarefa
-    data_vencimento: datetime
+    data_vencimento: Optional[datetime] = None
     usuario_id: Optional[UUID4] = None
     
     class Config:

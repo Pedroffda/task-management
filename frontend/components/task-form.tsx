@@ -53,7 +53,7 @@ export function TaskForm({
       descricao: task?.descricao || "",
       status: task?.status || "PENDENTE",
       prioridade: task?.prioridade || "MEDIA",
-      data_vencimento: formatDateForInput(task?.data_vencimento) || null,
+      data_vencimento: formatDateForInput(task?.data_vencimento) || undefined,
     },
   });
 

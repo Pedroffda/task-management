@@ -21,7 +21,7 @@ export default function NewTaskPage() {
         descricao: data.descricao || "",
         status: data.status,
         prioridade: data.prioridade,
-        data_vencimento: data.data_vencimento || "",
+        data_vencimento: data.data_vencimento || undefined,
         ordem: 0,
       });
 

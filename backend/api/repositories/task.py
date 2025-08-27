@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from typing import List, Optional, Tuple
 from sqlalchemy import select, func, update
 from sqlalchemy.orm import Session
@@ -28,6 +29,9 @@ class TaskRepository:
         try:
             if not task_data.usuario_id:
                 task_data.usuario_id = usuario_id
+                
+            if not task_data.data_vencimento:
+                task_data.data_vencimento = datetime.now()
             
             new_task = Tarefa(
                 titulo=task_data.titulo,

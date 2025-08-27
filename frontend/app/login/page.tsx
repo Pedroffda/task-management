@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
@@ -18,12 +18,21 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { loginSchema, type LoginFormData } from "@/lib/validations";
 import { useAuth } from "@/contexts/auth-context";
+import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, user, isLoading: authLoading } = useAuth();
+  const { success, error: showError } = useToast();
+
+  // Redirecionar usuários já autenticados
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push("/tasks");
+    }
+  }, [user, authLoading, router]);
 
   const {
     register,
@@ -38,15 +47,16 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const user = await login(data.email, data.password);
-      if (user) {
+      const result = await login(data.email, data.password);
+      if (result.success) {
+        success("Login realizado com sucesso!");
         // Redirecionar para a página de tarefas após login bem-sucedido
         router.push("/tasks");
       } else {
-        setError("Email ou senha inválidos. Tente novamente.");
+        showError(result.error || "Email ou senha inválidos. Tente novamente.");
       }
-    } catch (err) {
-      setError("Ocorreu um erro durante o login. Tente novamente.");
+    } catch {
+      showError("Ocorreu um erro durante o login. Tente novamente.");
     } finally {
       setIsLoading(false);
     }

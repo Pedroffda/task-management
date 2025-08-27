@@ -1,4 +1,5 @@
 import { API_BASE_URL, API_ENDPOINTS } from '../api-config'
+import { ApiError } from './api-errors'
 
 interface TokenResponse {
   access_token: string
@@ -44,7 +45,7 @@ class AuthAPI {
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`)
+        throw ApiError.fromResponse(response, errorData)
       }
 
       return await response.json()
@@ -56,7 +57,19 @@ class AuthAPI {
 
   private getStoredToken(): string | null {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('access_token')
+      // Primeiro verificar localStorage, depois cookies
+      const localToken = localStorage.getItem('access_token')
+      if (localToken) return localToken
+      
+      // Verificar cookies
+      const cookies = document.cookie.split(';')
+      const tokenCookie = cookies.find(cookie => cookie.trim().startsWith('access_token='))
+      if (tokenCookie) {
+        const token = tokenCookie.split('=')[1]
+        // Sincronizar com localStorage
+        localStorage.setItem('access_token', token)
+        return token
+      }
     }
     return null
   }
@@ -92,7 +105,7 @@ class AuthAPI {
 
     // Buscar dados do usuário logado
     const user = await this.getCurrentUser()
-    console.log(user)
+
     return user
   }
 
@@ -103,6 +116,8 @@ class AuthAPI {
       email,
       senha: password,
     }
+
+
 
     const createdUser = await this.request<ApiUser>(
       API_ENDPOINTS.AUTH.REGISTER,

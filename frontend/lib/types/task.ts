@@ -7,7 +7,7 @@ export interface Task {
   descricao: string
   status: TaskStatus
   prioridade: TaskPriority
-  data_vencimento: string
+  data_vencimento: string | undefined
   created_at: string
   updated_at: string
   usuario_id: string,
@@ -19,7 +19,7 @@ export interface TaskCreate {
   descricao: string
   status: TaskStatus
   prioridade: TaskPriority
-  data_vencimento: string
+  data_vencimento: string | undefined
   ordem?: number
 }
 
@@ -28,7 +28,7 @@ export interface TaskUpdate {
   descricao?: string
   status?: TaskStatus
   prioridade?: TaskPriority
-  data_vencimento?: string
+  data_vencimento?: string | undefined
   ordem?: number
 }
 

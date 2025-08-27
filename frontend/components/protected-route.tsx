@@ -5,6 +5,7 @@ import type React from "react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
+import { AuthLoading } from "./auth-loading";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -21,11 +22,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   }, [user, isLoading, router]);
 
   if (isLoading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">Loading...</div>
-      </div>
-    );
+    return <AuthLoading />;
   }
 
   if (!user) {

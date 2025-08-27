@@ -8,8 +8,8 @@ export const API_ENDPOINTS = {
     ME: '/api/v1/auth/me',
   },
   TASKS: {
-    LIST: '/api/v1/tarefas',
-    CREATE: '/api/v1/tarefas',
+    LIST: '/api/v1/tarefas/',
+    CREATE: '/api/v1/tarefas/',
     UPDATE: '/api/v1/tarefas/{id}',
     DELETE: '/api/v1/tarefas/{id}',
   },

@@ -71,7 +71,7 @@ export default function TaskDetailPage({ params }: TaskDetailPageProps) {
         await taskService.deleteTask(task.id);
         router.push("/tasks");
       } catch (err) {
-        setError("Falha ao excluir tarefa.");
+        // setError("Falha ao excluir tarefa.");
       }
     }
   };
