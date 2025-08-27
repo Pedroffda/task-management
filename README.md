@@ -13,6 +13,7 @@ Desenvolver um sistema completo de gerenciamento de tarefas que demonstre conhec
 - **Documentação**: Swagger/OpenAPI + README.md
 - **Containerização**: Docker e Docker Compose
 - **Migrações**: Alembic
+- **Testes**: pytest + cobertura de código
 
 ### Frontend
 - **Framework**: Next.js 15.5.0 (React 19)
@@ -91,9 +92,16 @@ task-management/
 ├── backend/                 # FastAPI Python API
 │   ├── api/                # Endpoints da API
 │   ├── migrations/         # Migrações do banco (Alembic)
+│   ├── tests/              # Testes automatizados
+│   │   ├── unit/           # Testes unitários
+│   │   ├── integration/    # Testes de integração
+│   │   ├── factories/      # Factories para dados de teste
+│   │   └── conftest.py     # Configuração do pytest
 │   ├── pyproject.toml      # Dependências Python (Poetry)
 │   ├── poetry.lock         # Lock file das dependências
-│   └── Dockerfile          # Containerização do backend
+│   ├── Dockerfile          # Containerização do backend
+│   ├── Dockerfile.test     # Containerização para testes
+│   └── run_tests.py        # Script de execução de testes
 ├── frontend/               # Next.js App
 │   ├── app/                # App Router do Next.js
 │   ├── components/         # Componentes React
@@ -156,6 +164,52 @@ docker compose logs -f web      # Frontend
 docker compose logs -f db       # Banco de dados
 ```
 
+## 🧪 Testes Automatizados
+
+### Executar Testes
+
+```bash
+# Navegar para o diretório backend
+cd backend
+
+# Instalar dependências de desenvolvimento
+poetry install
+
+# Executar todos os testes
+poetry run pytest
+
+# Executar testes com cobertura
+poetry run pytest --cov=api --cov-report=term-missing --cov-report=html
+
+# Executar testes específicos
+poetry run pytest tests/unit/                    # Apenas testes unitários
+poetry run pytest tests/integration/             # Apenas testes de integração
+poetry run pytest -k "test_auth"                # Testes que contenham "test_auth"
+```
+
+### Executar Testes com Docker
+
+```bash
+# Executar testes em container separado
+docker compose --profile test up test
+
+# Executar testes e gerar relatórios
+docker compose --profile test run --rm test poetry run pytest --cov=api --cov-report=html
+```
+
+### Cobertura dos Testes
+
+- **✅ Autenticação**: Registro, login, logout, validação JWT
+- **✅ Gerenciamento de Tarefas**: CRUD completo, validações, transições de status
+- **✅ Testes Unitários**: Lógica de negócio e serviços
+- **✅ Testes de Integração**: Endpoints da API e fluxos completos
+
+### Relatórios de Cobertura
+
+- **Terminal**: Cobertura em texto
+- **HTML**: Relatório detalhado em `backend/htmlcov/index.html`
+- **XML**: Formato para CI/CD
+
 ## 🔧 Desenvolvimento
 
 ### Estrutura dos Containers
@@ -163,6 +217,7 @@ docker compose logs -f db       # Banco de dados
 - **`task_manager_frontend`**: Container Next.js na porta 3000
 - **`task_manager_api`**: Container FastAPI na porta 8001
 - **`task_manager_db`**: Container PostgreSQL na porta 5332
+- **`task_manager_test`**: Container de testes (perfil "test")
 
 ### Volumes e Persistência
 
@@ -178,3 +233,37 @@ docker compose logs -f db       # Banco de dados
   - `SECRET_KEY`: Chave para JWT
   - `ALGORITHM`: Algoritmo de criptografia
   - `ACCESS_TOKEN_EXPIRE_MINUTES`: Tempo de expiração do token
+
+## 📦 Entregáveis
+
+1. **✅ Repositório GitHub** com código fonte completo
+2. **✅ README.md** com instruções de instalação e execução
+3. **🔄 Deploy** em servidor público (próximo passo)
+4. **✅ Documentação Swagger** acessível em `/docs`
+5. **🔄 Collection Postman** ou arquivo com exemplos de requisições
+6. **✅ Testes Automatizados** para o projeto
+
+## 🚧 Próximos Passos
+
+- [ ] Implementar testes de frontend (Jest + Testing Library)
+- [ ] Configurar CI/CD com GitHub Actions
+- [ ] Deploy em ambiente de produção
+- [ ] Adicionar monitoramento e logs
+- [ ] Implementar cache (Redis)
+- [ ] Adicionar rate limiting
+- [ ] Implementar backup automático do banco
+- [ ] Adicionar testes de performance
+- [ ] Implementar testes de segurança
+
+## 🤝 Contribuição
+
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. **Execute os testes** antes de fazer commit (`cd backend && poetry run pytest`)
+4. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+5. Push para a branch (`git push origin feature/AmazingFeature`)
+6. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
