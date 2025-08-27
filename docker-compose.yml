@@ -1,4 +1,3 @@
-version: '3.8'
 
 networks:
   fastapi_network:
@@ -31,11 +30,29 @@ services:
       POSTGRES_PASSWORD: password123
       POSTGRES_DB: task_manager_db
     ports:
-      - "5432:5432"
+      - "5332:5432"
     volumes:
       - task_manager_data:/var/lib/postgresql/data
     networks:
       - fastapi_network
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: ../Dockerfile
+    container_name: task_manager_api
+    ports:
+      - "8001:8000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://task_manager:password123@db:5432/task_manager_db
+      SECRET_KEY: 09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: "60"
+    networks:
+      - fastapi_network
+    stdin_open: true
 
 volumes:
   task_manager_data:
